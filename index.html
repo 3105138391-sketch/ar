@@ -1,152 +1,736 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>WebAR 桌寵</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #000; }
-        #info { position: absolute; top: 10px; width: 100%; text-align: center; color: white; font-family: sans-serif; pointer-events: none; }
-    </style>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZW | 个人网站</title>
+  <style>
+    :root {
+      --primary: #2D3748;
+      --accent: #3B82F6;
+      --bg: #F8FAFC;
+      --text: #1F2937;
+      --muted: #64748B;
+      --card: #ffffff;
+      --border: #E2E8F0;
+      --radius: 16px;
+      --shadow: 0 10px 30px rgba(45, 55, 72, 0.1);
+      --transition: 0.25s ease;
     }
-    </script>
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 90px;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.7;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: min(1120px, 92vw);
+      margin: 0 auto;
+    }
+
+    .section {
+      padding: 84px 0;
+    }
+
+    .section-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      margin: 0 0 12px;
+      color: var(--primary);
+    }
+
+    .section-subtitle {
+      margin: 0 0 32px;
+      color: var(--muted);
+    }
+
+    .top-nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 999;
+      transition: background var(--transition), box-shadow var(--transition), backdrop-filter var(--transition);
+    }
+
+    .top-nav.scrolled {
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 1px 0 rgba(148, 163, 184, 0.25);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .brand strong {
+      font-size: 1.1rem;
+      color: var(--primary);
+      letter-spacing: 0.06em;
+    }
+
+    .brand span {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-link {
+      position: relative;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -3px;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--transition);
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after { transform: scaleX(1); }
+
+    .menu-btn {
+      display: none;
+      border: 0;
+      background: transparent;
+      font-size: 1.4rem;
+      color: var(--primary);
+    }
+
+    .hero {
+      padding-top: 130px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 40px;
+      align-items: center;
+      grid-template-columns: 1.2fr 1fr;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      color: var(--primary);
+      line-height: 1.2;
+    }
+
+    .role-tag {
+      margin: 16px 0;
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(59,130,246,.15), rgba(45,55,72,.08));
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .value-lines {
+      margin: 0 0 24px;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .value-lines li + li { margin-top: 6px; }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 20px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(0);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .5s, opacity .7s;
+    }
+
+    .btn:active::after {
+      transform: scale(1);
+      opacity: 1;
+      transition: 0s;
+      top: calc(var(--y) - 110px);
+      left: calc(var(--x) - 110px);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn.secondary {
+      background: #fff;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-photo-wrap {
+      justify-self: center;
+      width: min(330px, 75vw);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 6px solid #fff;
+      background: linear-gradient(145deg, #dbeafe, #f1f5f9);
+    }
+
+    .hero-photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .scroll-cue {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .scroll-cue span {
+      display: inline-block;
+      animation: bounce 1.4s infinite;
+    }
+
+    .wave {
+      width: 100%;
+      height: 70px;
+      display: block;
+      margin-top: 32px;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(5px); }
+    }
+
+    .about-grid,
+    .skills-grid,
+    .projects-grid,
+    .contact-grid {
+      display: grid;
+      gap: 24px;
+    }
+
+    .about-grid {
+      grid-template-columns: 1.2fr 1fr;
+      align-items: center;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1e40af;
+      font-weight: 600;
+      font-size: 0.84rem;
+    }
+
+    .timeline {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-left: 2px solid #cbd5e1;
+      padding-left: 14px;
+      color: var(--muted);
+    }
+
+    .timeline li + li { margin-top: 10px; }
+
+    .about-illustration {
+      background: #fff;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 3rem;
+    }
+
+    .skills-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow);
+    }
+
+    .level {
+      height: 8px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+      margin: 6px 0 10px;
+    }
+
+    .level span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #1d4ed8, #60a5fa);
+    }
+
+    .badge {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: .75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 700;
+    }
+
+    .note {
+      margin-top: 16px;
+      color: #2563eb;
+      font-weight: 600;
+    }
+
+    .projects-grid {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .project-type {
+      display: inline-block;
+      font-size: .75rem;
+      color: #1e40af;
+      background: #dbeafe;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .actions a {
+      flex: 1;
+      text-align: center;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-weight: 700;
+      transition: var(--transition);
+    }
+
+    .actions a:first-child {
+      border-color: transparent;
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .actions a:hover { transform: translateY(-2px); }
+
+    .contact {
+      background: #fff;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .contact-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .contact-item {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .icon-links {
+      display: flex;
+      gap: 14px;
+      font-size: 1.4rem;
+      margin-top: 8px;
+    }
+
+    .icon-links a {
+      color: var(--accent);
+      transition: transform var(--transition), color var(--transition);
+    }
+
+    .icon-links a:hover {
+      transform: scale(1.1);
+      color: #1d4ed8;
+    }
+
+    footer {
+      padding: 26px 0 40px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .motto { margin-top: 8px; }
+
+    .to-top {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
+    }
+
+    .to-top.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .to-top:hover { transform: translateY(-3px); }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .about-grid,
+      .skills-grid,
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .menu-btn { display: inline-block; }
+      .nav-links {
+        position: absolute;
+        top: 60px;
+        right: 4vw;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        flex-direction: column;
+        padding: 12px;
+        min-width: 130px;
+        box-shadow: var(--shadow);
+        display: none;
+      }
+
+      .nav-links.open { display: flex; }
+    }
+
+    @media print {
+      .top-nav,
+      .to-top,
+      .wave,
+      .scroll-cue,
+      .btn-row,
+      .menu-btn { display: none !important; }
+
+      body { background: #fff; color: #000; }
+      .section { padding: 30px 0; }
+      .contact { border: 1px solid #000; }
+    }
+  </style>
 </head>
 <body>
-    <div id="info">請允許攝像頭權限，將手機對準桌面緩慢平移。出現綠色光圈後點擊屏幕放置。</div>
-    <script type="module">
-        import * as THREE from 'three';
-        import { ARButton } from 'three/addons/webxr/ARButton.js';
-        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  <header class="top-nav" id="topNav" aria-label="站点导航">
+    <div class="container nav-inner">
+      <a href="#home" class="brand" aria-label="返回首页">
+        <strong>ZW</strong>
+        <span>创造数字体验</span>
+      </a>
+      <button class="menu-btn" id="menuBtn" aria-label="打开导航菜单">☰</button>
+      <ul class="nav-links" id="navLinks">
+        <li><a class="nav-link" href="#home">首页</a></li>
+        <li><a class="nav-link" href="#about">关于</a></li>
+        <li><a class="nav-link" href="#skills">技能</a></li>
+        <li><a class="nav-link" href="#projects">作品</a></li>
+        <li><a class="nav-link" href="#contact">联系</a></li>
+      </ul>
+    </div>
+  </header>
 
-        let container, camera, scene, renderer;
-        let controller, reticle;
-        let hitTestSource = null;
-        let hitTestSourceRequested = false;
-        let petModel, mixer, clock;
+  <main>
+    <section class="hero section" id="home">
+      <div class="container hero-grid">
+        <div>
+          <h1>张伟</h1>
+          <p class="role-tag">全栈开发者 · 产品设计师</p>
+          <ul class="value-lines">
+            <li>用代码解决真实问题</li>
+            <li>专注用户体验与业务价值</li>
+            <li>持续学习，长期主义成长</li>
+          </ul>
+          <div class="btn-row">
+            <a href="#projects" class="btn primary">查看作品集</a>
+            <a href="#" class="btn secondary" download>下载简历</a>
+          </div>
+          <a class="scroll-cue" href="#about">向下了解更多 <span>↓</span></a>
+        </div>
+        <div class="hero-photo-wrap">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=900&q=80" alt="张伟专业形象照" loading="eager" />
+        </div>
+      </div>
+      <svg class="wave" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,64 C200,140 400,0 600,60 C800,120 1000,30 1200,70 L1200,120 L0,120Z" fill="#ffffff"></path>
+      </svg>
+    </section>
 
-        init();
-        animate();
+    <section class="section" id="about">
+      <div class="container about-grid">
+        <div>
+          <h2 class="section-title">👤 关于我</h2>
+          <p>我是一名兼具设计思维与工程能力的创作者，专注打造高可用、可扩展、可持续的数字产品。过去几年中，我在企业项目与个人实践里持续打磨“从用户洞察到产品交付”的完整流程，擅长在复杂需求中提炼关键问题，并通过协作把想法快速落地。</p>
+          <div class="tags">
+            <span class="chip">终身学习者</span>
+            <span class="chip">细节控</span>
+            <span class="chip">跨领域协作者</span>
+          </div>
+          <ul class="timeline">
+            <li><strong>2020 - 至今：</strong> XX 科技公司 · 全栈开发与体验优化</li>
+            <li><strong>2018 - 2020：</strong> XX 创新项目 · 产品原型与前端开发</li>
+          </ul>
+        </div>
+        <aside class="about-illustration" aria-label="人物与电脑插画">
+          🧑‍💻📘
+          <p style="font-size:0.95rem; margin-top:12px;">以用户为中心，持续构建有温度的体验</p>
+        </aside>
+      </div>
+    </section>
 
-        function init() {
-            container = document.createElement( 'div' );
-            document.body.appendChild( container );
-            scene = new THREE.Scene();
-            clock = new THREE.Clock();
-            camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
+    <section class="section" id="skills">
+      <div class="container">
+        <h2 class="section-title">🚀 我的专长</h2>
+        <p class="section-subtitle">持续精进中的能力地图</p>
+        <div class="skills-grid">
+          <article class="card">
+            <h3>🛠️ 技术栈</h3>
+            <p>JavaScript / Python / React / Node.js / Figma</p>
+            <p>JavaScript（精通）</p>
+            <div class="level"><span style="width:92%"></span></div>
+            <p>React（熟练）</p>
+            <div class="level"><span style="width:82%"></span></div>
+            <p>Python（熟练）</p>
+            <div class="level"><span style="width:78%"></span></div>
+          </article>
+          <article class="card">
+            <h3>🌱 核心能力</h3>
+            <p>用户体验设计 · 项目管理 · 跨团队协作 · 数据分析</p>
+            <p>能在产品、设计、开发之间建立共识，推动项目高质量交付。</p>
+          </article>
+          <article class="card">
+            <h3>📚 持续学习 <span class="badge">更新中</span></h3>
+            <p>AI 应用探索</p>
+            <p>无障碍设计</p>
+            <p>产品思维与增长框架</p>
+          </article>
+        </div>
+        <p class="note">所有技能均经过真实项目验证 →</p>
+      </div>
+    </section>
 
-            // 添加光照，讓模型有立體感
-            const light = new THREE.HemisphereLight( 0xffffff, 0xbbbbff, 1 );
-            light.position.set( 0.5, 1, 0.25 );
-            scene.add( light );
+    <section class="section" id="projects">
+      <div class="container">
+        <h2 class="section-title">✨ 近期实践</h2>
+        <div class="projects-grid">
+          <article class="card">
+            <span class="project-type">Web 应用</span>
+            <h3>智能客服知识平台</h3>
+            <p>负责从需求拆解到前后端实现，帮助团队将常见咨询处理效率提升 40%。</p>
+            <div class="stack"><span>React</span><span>Node.js</span><span>PostgreSQL</span></div>
+            <div class="actions">
+              <a href="#" aria-label="查看智能客服案例详情">案例详情</a>
+              <a href="#" aria-label="前往智能客服GitHub仓库">GitHub</a>
+            </div>
+          </article>
+          <article class="card">
+            <span class="project-type">管理后台</span>
+            <h3>运营数据可视化系统</h3>
+            <p>主导信息架构与交互设计，通过可视化面板支持运营快速决策。</p>
+            <div class="stack"><span>Vue</span><span>ECharts</span><span>Python</span></div>
+            <div class="actions">
+              <a href="#" aria-label="查看运营系统案例详情">案例详情</a>
+              <a href="#" aria-label="前往运营系统GitHub仓库">GitHub</a>
+            </div>
+          </article>
+          <article class="card">
+            <span class="project-type">移动体验</span>
+            <h3>轻量任务协同工具</h3>
+            <p>兼顾产品设计与工程实现，聚焦小团队沟通效率与信息透明。</p>
+            <div class="stack"><span>TypeScript</span><span>Next.js</span><span>Figma</span></div>
+            <div class="actions">
+              <a href="#" aria-label="查看任务工具案例详情">案例详情</a>
+              <a href="#" aria-label="前往任务工具GitHub仓库">GitHub</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
 
-            // 初始化渲染器
-            renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
-            renderer.setPixelRatio( window.devicePixelRatio );
-            renderer.setSize( window.innerWidth, window.innerHeight );
-            renderer.xr.enabled = true;
-            container.appendChild( renderer.domElement );
+    <section class="section contact" id="contact">
+      <div class="container">
+        <h2 class="section-title">保持联系 🌱</h2>
+        <div class="contact-grid">
+          <article class="contact-item">
+            <h3>📧 邮箱</h3>
+            <a href="mailto:contact@yourname.com" aria-label="发送邮件到contact@yourname.com">contact@yourname.com</a>
+          </article>
+          <article class="contact-item">
+            <h3>💼 职业平台</h3>
+            <div class="icon-links">
+              <a href="#" aria-label="LinkedIn">🔗</a>
+              <a href="#" aria-label="GitHub">🐱</a>
+            </div>
+          </article>
+          <article class="contact-item">
+            <h3>🌐 其他</h3>
+            <div class="icon-links">
+              <a href="#" aria-label="Twitter">𝕏</a>
+              <a href="#" aria-label="个人博客">📝</a>
+            </div>
+          </article>
+        </div>
+        <p class="section-subtitle" style="margin-top:16px;">工作日 48 小时内回复。</p>
+      </div>
+    </section>
+  </main>
 
-            // 加入 AR 按鈕
-            document.body.appendChild( ARButton.createButton( renderer, { requiredFeatures: [ 'hit-test' ] } ) );
+  <footer>
+    <div class="container">
+      <p>© 2024 张伟. 用心创造，简单生活。</p>
+      <p class="motto">代码有温度，设计有呼吸。</p>
+    </div>
+  </footer>
 
-            // 載入模型
-            const loader = new GLTFLoader();
-            // 注意：確保你的模型檔案名為 model.glb 並放在同一個資料夾
-            loader.load( 'model.glb', function ( gltf ) {
-                petModel = gltf.scene;
-                petModel.visible = false; 
-                // 根據實際情況調整模型大小，0.1 代表縮小到 10%
-                petModel.scale.set(0.1, 0.1, 0.1); 
-                scene.add( petModel );
+  <button class="to-top" id="toTop" aria-label="回到顶部">↑</button>
 
-                // 播放第一個動畫
-                if (gltf.animations && gltf.animations.length > 0) {
-                    mixer = new THREE.AnimationMixer(petModel);
-                    mixer.clipAction(gltf.animations[0]).play();
-                }
-            });
+  <script>
+    const nav = document.getElementById('topNav');
+    const menuBtn = document.getElementById('menuBtn');
+    const navLinks = document.getElementById('navLinks');
+    const toTop = document.getElementById('toTop');
+    const links = [...document.querySelectorAll('.nav-link')];
+    const sections = [...document.querySelectorAll('main section[id]')];
 
-            // 點擊事件：將寵物放到光圈位置
-            function onSelect() {
-                if ( reticle.visible && petModel ) {
-                    petModel.position.setFromMatrixPosition( reticle.matrix );
-                    // 讓寵物面向攝像頭
-                    petModel.lookAt(camera.position); 
-                    petModel.rotation.x = 0; // 保持直立
-                    petModel.rotation.z = 0;
-                    petModel.visible = true;
-                }
-            }
+    menuBtn.addEventListener('click', () => navLinks.classList.toggle('open'));
 
-            controller = renderer.xr.getController( 0 );
-            controller.addEventListener( 'select', onSelect );
-            scene.add( controller );
+    links.forEach(link => {
+      link.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
 
-            // 建立 AR 瞄準光圈 (Reticle)
-            reticle = new THREE.Mesh(
-                new THREE.RingGeometry( 0.15, 0.2, 32 ).rotateX( - Math.PI / 2 ),
-                new THREE.MeshBasicMaterial( { color: 0x00ff00 } )
-            );
-            reticle.matrixAutoUpdate = false;
-            reticle.visible = false;
-            scene.add( reticle );
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 14);
+      toTop.classList.toggle('show', window.scrollY > 500);
 
-            window.addEventListener( 'resize', onWindowResize );
-        }
+      const midpoint = window.scrollY + window.innerHeight * 0.35;
+      sections.forEach(section => {
+        const active = midpoint >= section.offsetTop && midpoint < section.offsetTop + section.offsetHeight;
+        const target = links.find(link => link.getAttribute('href') === `#${section.id}`);
+        if (target) target.classList.toggle('active', active);
+      });
+    });
 
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize( window.innerWidth, window.innerHeight );
-        }
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        function animate() {
-            renderer.setAnimationLoop( render );
-        }
-
-        function render( timestamp, frame ) {
-            if ( frame ) {
-                const referenceSpace = renderer.xr.getReferenceSpace();
-                const session = renderer.xr.getSession();
-
-                // 請求射線檢測源
-                if ( hitTestSourceRequested === false ) {
-                    session.requestReferenceSpace( 'viewer' ).then( function ( referenceSpace ) {
-                        session.requestHitTestSource( { space: referenceSpace } ).then( function ( source ) {
-                            hitTestSource = source;
-                        } );
-                    } );
-                    session.addEventListener( 'end', function () {
-                        hitTestSourceRequested = false;
-                        hitTestSource = null;
-                    } );
-                    hitTestSourceRequested = true;
-                }
-
-                // 執行平面檢測
-                if ( hitTestSource ) {
-                    const hitTestResults = frame.getHitTestResults( hitTestSource );
-                    if ( hitTestResults.length > 0 ) {
-                        const hit = hitTestResults[ 0 ];
-                        reticle.visible = true;
-                        reticle.matrix.fromArray( hit.getPose( referenceSpace ).transform.matrix );
-                    } else {
-                        reticle.visible = false;
-                    }
-                }
-            }
-
-            // 更新動畫與渲染
-            const delta = clock.getDelta();
-            if ( mixer ) mixer.update( delta );
-            renderer.render( scene, camera );
-        }
-    </script>
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('pointerdown', e => {
+        const rect = btn.getBoundingClientRect();
+        btn.style.setProperty('--x', `${e.clientX - rect.left}px`);
+        btn.style.setProperty('--y', `${e.clientY - rect.top}px`);
+      });
+    });
+  </script>
 </body>
 </html>
